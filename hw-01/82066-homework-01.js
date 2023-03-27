@@ -1,6 +1,8 @@
 vaxInit();
 renderer.shadowMap.enabled = true;
 
+var isEating = false;
+
 function createGround() {
     groundSize = new THREE.Vector3(100, 2, 100);
     var material = new THREE.MeshPhongMaterial({color: 'green'});
@@ -291,9 +293,38 @@ function runBear(t) {
     backRightLeg.rotation.set(Math.sin(t * 6 + 3.5) / 6, 0, 0);
 }
 
+function eatBear(t) {
+    body.rotation.set(Math.sin(t * 7) / 12, 0, 0);
+    head.rotation.set(0.4 + Math.sin(t * 7) / 12, 0, 0);
+}
+
+function startEatingBear(t) {
+    head.position.add(new THREE.Vector3(0, -10, 4));
+}
+
+function stopEatingBear(t) {
+    head.position.add(new THREE.Vector3(0, 10, -4));
+    body.rotation.set(0, 0, 0);
+    head.rotation.set(0, 0, 0);
+}
+
 function animate(t) {
-    scene.rotation.set(0, Math.sin(t / 3) / 3, 0);
-    camera.position.add(new THREE.Vector3(0, 0, 0.2));
+    scene.rotation.set(0, t, 0);
+    //camera.position.add(new THREE.Vector3(0, 0, 0.2));
     tail.rotation.set(0, 0, Math.sin(t * 10));
-    runBear(t);
+    if (!isEating) {
+        startEatingBear(t);
+        isEating = true;
+    }
+    if (t > 2 && isEating) {
+        stopEatingBear(t);
+        isEating = false;
+    }
+
+    if (isEating) {
+        eatBear(t);
+    }
+    else {
+        runBear(t);
+    }
 }
