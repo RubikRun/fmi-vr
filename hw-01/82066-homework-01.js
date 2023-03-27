@@ -2,9 +2,10 @@ vaxInit();
 renderer.shadowMap.enabled = true;
 
 function createGround() {
+    groundSize = new THREE.Vector3(100, 2, 100);
     var material = new THREE.MeshPhongMaterial({color: 'green'});
     // create ground object
-    geometry = new THREE.BoxGeometry(250, 2, 250);
+    geometry = new THREE.BoxGeometry(groundSize.x, groundSize.y, groundSize.z);
     var ground = new THREE.Mesh(geometry, material);
     ground.position.set(0, 0, 0);
     scene.add(ground);
@@ -35,7 +36,7 @@ function setupLights() {
     scene.add(light);
     // create back light
     light = new THREE.PointLight( 'white' );
-    light.position.set(0, 300, -500);
+    light.position.set(0, 300, -300);
     light.castShadow = true;
     light.shadow.mapSize.width = 4096;
 	light.shadow.mapSize.height = 4096;
@@ -236,20 +237,63 @@ function createBear() {
     scene.add(bear);
 }
 
+function getRandShadeOfGreen() {
+    var r = Math.random() * 0.3;
+    var g = Math.random() * 0.4 + 0.5;
+    var b = Math.random() * 0.3;
+
+    return new THREE.Color(r, g, b);
+}
+
+function createGrass() {
+    var material, geometry, object;
+    var grassHeight = 6;
+    var bigRadius = 0.08;
+    var smallRadius = 0;
+    var grassCount = 1000;
+    var groundBound = 0.05;
+
+    grass = new THREE.Group();
+    scene.add(grass);
+
+    for (var i = 0; i < grassCount; i++) {
+        material = new THREE.MeshPhongMaterial({color: getRandShadeOfGreen()});
+        // create grass object
+        geometry = new THREE.CylinderGeometry(smallRadius * grassHeight, bigRadius * grassHeight, grassHeight);
+        geometry = new THREE.Mesh(geometry, material);
+        geometry.position.set(
+            Math.random() * (groundSize.x * (1-groundBound)) - (groundSize.x * (1-groundBound)) / 2,
+            grassHeight / 2,
+            Math.random() * (groundSize.z * (1-groundBound)) - (groundSize.x * (1-groundBound)) / 2
+        );
+        geometry.rotation.set(
+            Math.random() * 0.4 - 0.2,
+            0,
+            Math.random() * 0.4 - 0.2
+        );
+        //geometry.castShadow = true;
+        grass.add(geometry);
+    }
+}
+
 setupCamera();
 setupLights();
 createGround();
+createGrass();
 createBear();
 
-function animate(t) {
-    scene.rotation.set(0, Math.sin(t / 3) / 3, 0);
-    camera.position.add(new THREE.Vector3(0, 0, 0.2));
-    tail.rotation.set(0, 0, Math.sin(t * 10));
-
+function runBear(t) {
     bear.position.add(new THREE.Vector3(0, 0, 0.2));
 
     frontLeftLeg.rotation.set(Math.sin(t * 6) / 6, 0, 0);
     frontRightLeg.rotation.set(Math.sin(t * 6 + 0.6) / 6, 0, 0);
     backLeftLeg.rotation.set(Math.sin(t * 6 + 3) / 6, 0, 0);
     backRightLeg.rotation.set(Math.sin(t * 6 + 3.5) / 6, 0, 0);
+}
+
+function animate(t) {
+    scene.rotation.set(0, Math.sin(t / 3) / 3, 0);
+    camera.position.add(new THREE.Vector3(0, 0, 0.2));
+    tail.rotation.set(0, 0, Math.sin(t * 10));
+    runBear(t);
 }
