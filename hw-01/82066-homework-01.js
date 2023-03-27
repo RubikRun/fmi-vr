@@ -1,0 +1,4 @@
+vaxInit();
+	
+function animate(t) {
+}
