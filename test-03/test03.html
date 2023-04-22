@@ -21,6 +21,7 @@
 			var COLOR_PANE_MATERIAL = 'rgb(162, 91, 45)';
 			var COLOR_DOOR_BASE = 'rgb(140, 81, 35)';
 			var COLOR_DOOR_FRAME = 'rgb(75, 40, 30)';
+			var COLOR_ROOF_CROSS = 'rgb(140, 81, 35)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
@@ -138,6 +139,33 @@
 						roofPart.rotation.z = roofAngles[i];
 						roofPart.castShadow = true;
 						house.add(roofPart);
+					}
+
+					createCross(house);
+
+					function createCross(house)
+					{
+						var cross = new THREE.Group();
+						var crossSize = 2.2;
+						var crossWidth = 0.6;
+
+						var crossMaterial = new THREE.MeshStandardMaterial( {color:COLOR_ROOF_CROSS} );
+
+						var vertGeom = new THREE.BoxGeometry(crossWidth, crossSize * 4, 0.2 );
+						var vert = new THREE.Mesh(vertGeom, crossMaterial);
+						cross.add(vert);
+
+						var horGeom = new THREE.BoxGeometry(crossSize * 2, crossWidth, 0.2 );
+						var hor = new THREE.Mesh(horGeom, crossMaterial);
+						hor.position.set(0, 3 * crossSize / 4, 0);
+						cross.add(hor);
+
+						cross.position.set(
+							0,
+							GROUND_LEVEL + crossSize * 2 + wallHeight + width * Math.sin(angle) - (width * Math.cos(angle) - houseWidth / 2) * Math.tan(angle),
+							houseLength/2
+						);
+						house.add(cross);
 					}
 				}
 				function createDoor(house)
