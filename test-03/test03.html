@@ -22,6 +22,8 @@
 			var COLOR_DOOR_BASE = 'rgb(140, 81, 35)';
 			var COLOR_DOOR_FRAME = 'rgb(75, 40, 30)';
 			var COLOR_ROOF_CROSS = 'rgb(140, 81, 35)';
+			var COLOR_GRAVE_ONE = 'rgb(150, 140, 135)';
+			var COLOR_GRAVE_TWO = 'rgb(52, 54, 67)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
@@ -34,6 +36,8 @@
 
 			var ground = createGround();
 			var house = createHouse();
+
+			createGravestoneOne(new THREE.Vector3(30, GROUND_LEVEL, 30), 7);
 			
 			function animate( t )
 			{
@@ -80,6 +84,32 @@
 				ground.receiveShadow = true;
 				scene.add(ground);
 				return ground;
+			}
+			function createGravestoneOne(position, height)
+			{
+				var grave = new THREE.Group();
+
+				var thickness = height * 0.1;
+				var width = height * 0.65;
+				var radius = width/2;
+				var baseHeight = height - radius;
+
+				var graveMaterial = new THREE.MeshStandardMaterial( {color:COLOR_GRAVE_ONE} );
+
+				var baseGeom = new THREE.BoxGeometry( width, baseHeight, thickness );
+				var base = new THREE.Mesh(baseGeom, graveMaterial);
+				base.position.set(0, baseHeight/2, 0);
+				grave.add(base);
+
+				var cylGeom = new THREE.CylinderGeometry(  radius, radius, thickness );
+				var cyl = new THREE.Mesh(cylGeom, graveMaterial);
+				cyl.position.set(0, baseHeight, 0);
+				cyl.rotation.x = Math.PI/2;
+				grave.add(cyl);
+
+				grave.position.set(position.x, position.y, position.z);
+				scene.add(grave);
+				return grave;
 			}
 			function createHouse()
 			{
