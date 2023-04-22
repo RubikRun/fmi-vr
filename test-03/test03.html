@@ -15,26 +15,21 @@
 	
 	<body>
 		<script>
+			var COLOR_HOUSE_WALL = 'rgb(255, 255, 190)';
+			var GROUND_Y = -10;
+			var GROUND_THICKNESS = 4;
+			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
+
 			// Init stuff
 			vaxInit(); // TODO: bring back this: vaxInitParallax();
 			initCameraPosition();
-			control = initOrbitalNavigation()
+			var control = initOrbitalNavigation()
 
-			createGround();
+			var ground = createGround();
+			var house = createHouse();
 			
-			var cube = new THREE.Mesh(
-				new THREE.BoxGeometry( 20, 20, 20 ),
-				new THREE.MeshStandardMaterial( {color:'yellow'} )
-			);
-			cube.position.z = 40;
-			cube.rotation.y = 0.2;
-			scene.add( cube );
-
-		
 			function animate( t )
 			{
-				cube.rotation.y = t;
-
 				control.update();
 			}
 
@@ -43,8 +38,8 @@
 				var control = new THREE.OrbitControls( camera, renderer.domElement );
 				control.minDistance = 50;
 				control.maxDistance = 500;
-				control.minPolarAngle = 0.1;
-				control.maxPolarAngle = 1.4; 
+				control.minPolarAngle = 0;
+				control.maxPolarAngle = 1.7; 
 				control.rotateSpeed = 0.3;
 				control.enableDamping = true;
 				control.dampingFactor = 0.1;
@@ -61,16 +56,50 @@
 
 			function createGround()
 			{
-				var geometry = new THREE.BoxGeometry( 300, 4, 300 ),
+				var geometry = new THREE.BoxGeometry( 300, GROUND_THICKNESS, 300 ),
 				material = new THREE.MeshPhongMaterial({color:'rgb(0, 255, 0)', shininess:100});
 				var ground = new THREE.Mesh( geometry, material );
-				ground.position.set( 0, -10, 0 );
+				ground.position.set( 0, GROUND_Y, 0 );
 				ground.receiveShadow = true;
 				scene.add(ground);
+				return ground;
 			}
 			function createHouse()
 			{
+				var house = new THREE.Group();
+				createWalls(house);
+				scene.add(house);
+				return house;
 
+				function createWalls(house)
+				{
+					var length = 50;
+					var width = 30;
+					var height = 25;
+					var thickness = 1;
+					var onGroundY = GROUND_LEVEL + height/2;
+					var wallGeometries = [
+						new THREE.BoxGeometry( thickness, height, length ),
+						new THREE.BoxGeometry( width, height, thickness ),
+						new THREE.BoxGeometry( thickness, height, length ),
+						new THREE.BoxGeometry( width, height, thickness )
+					];
+					var wallPositions = [
+						new THREE.Vector3(-width/2 + thickness/2, onGroundY, 0),
+						new THREE.Vector3(0, onGroundY, length/2 - thickness/2),
+						new THREE.Vector3(width/2 - thickness/2, onGroundY, 0),
+						new THREE.Vector3(0, onGroundY, -length/2 + thickness/2)
+					];
+					var wallMaterial = new THREE.MeshStandardMaterial( {color:COLOR_HOUSE_WALL} );
+					for (var i = 0; i < wallGeometries.length; i++)
+					{
+						var wall = new THREE.Mesh(wallGeometries[i],wallMaterial);
+						wall.position.set(wallPositions[i].x, wallPositions[i].y, wallPositions[i].z);
+						console.log(i, wallPositions[i]);
+						wall.castShadow = true;
+						house.add(wall);
+					}
+				}
 			}
 		</script>
 	</body>
