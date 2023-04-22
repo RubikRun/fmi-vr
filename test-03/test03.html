@@ -17,6 +17,8 @@
 		<script>
 			var COLOR_HOUSE_WALL = 'rgb(255, 255, 190)';
 			var COLOR_HOUSE_ROOF = 'rgb(200, 80, 30)';
+			var COLOR_WINDOW_GLASS = 'rgb(202, 234, 245)';
+			var COLOR_PANE_MATERIAL = 'rgb(162, 91, 45)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
@@ -28,6 +30,7 @@
 
 			var ground = createGround();
 			var house = createHouse();
+			house.rotation.y = 0.5;
 			
 			function animate( t )
 			{
@@ -51,7 +54,7 @@
 			}
 			function initCameraPosition()
 			{
-				camera.position.set( -80, 50, 200 );
+				camera.position.set( -40, 50, 200 );
 				camera.lookAt( new THREE.Vector3(0,0,0) );
 			}
 
@@ -67,13 +70,14 @@
 			}
 			function createHouse()
 			{
-				var wallHeight = 25;
+				var wallHeight = 26;
 				var houseLength = 50;
 				var houseWidth = 30;
 
 				var house = new THREE.Group();
 				createBaseWalls(house);
 				createRoof(house);
+				createWindows(house);
 				scene.add(house);
 				return house;
 
@@ -132,6 +136,79 @@
 						roofPart.castShadow = true;
 						house.add(roofPart);
 					}
+				}
+				function createWindows(house)
+				{
+					var leftWindow1 = createWindow(house, 10, 16, [1,2]);
+					leftWindow1.position.set(-houseWidth/2, GROUND_LEVEL + 12, -10);
+					leftWindow1.rotation.y = Math.PI / 2;
+					var leftWindow2 = createWindow(house, 10, 16, [1,2]);
+					leftWindow2.position.set(-houseWidth/2, GROUND_LEVEL + 12, 10);
+					leftWindow2.rotation.y = Math.PI / 2;
+					var rightWindow1 = createWindow(house, 10, 16, [1,2]);
+					rightWindow1.position.set(houseWidth/2, GROUND_LEVEL + 12, -10);
+					rightWindow1.rotation.y = Math.PI / 2;
+					var rightWindow2 = createWindow(house, 10, 16, [1,2]);
+					rightWindow2.position.set(houseWidth/2, GROUND_LEVEL + 12, 10);
+					rightWindow2.rotation.y = Math.PI / 2;
+					var fronWindow1 = createWindow(house, 3, 7, [1,2], 0.3);
+					fronWindow1.position.set(-6, GROUND_LEVEL + 20, houseLength/2);
+					var fronWindow2 = createWindow(house, 3, 7, [1,2], 0.3);
+					fronWindow2.position.set(6, GROUND_LEVEL + 20, houseLength/2);
+				}
+				function createWindow(house, width, height, paneCount, paneThickness=1)
+				{
+					var window = new THREE.Group();
+
+					var glassGeometry = new THREE.BoxGeometry( width, height, 0.2 )
+					var glassMaterial = new THREE.MeshPhongMaterial({color:COLOR_WINDOW_GLASS, shininess: 100});
+					var glass = new THREE.Mesh(glassGeometry, glassMaterial);
+					window.add(glass);
+
+					var paneWidth = 4;
+					var paneZThickness = 1;
+					var paneGeometries = [
+						new THREE.BoxGeometry( width, paneThickness, paneZThickness ),
+						new THREE.BoxGeometry( paneThickness, height, paneZThickness ),
+						new THREE.BoxGeometry( width, paneThickness, paneZThickness ),
+						new THREE.BoxGeometry( paneThickness, height, paneZThickness )
+					];
+					var panePositions = [
+						new THREE.Vector3(0, height/2, 0),
+						new THREE.Vector3(width/2, 0, 0),
+						new THREE.Vector3(0, -height/2, 0),
+						new THREE.Vector3(-width/2, 0, 0)
+					];
+					for (var i = 0; i < paneCount[0]; i++)
+					{
+						var offset = (i + 1) * width / (paneCount[0] + 1);
+						paneGeometries.push(
+							new THREE.BoxGeometry( paneThickness, height, paneZThickness )
+						);
+						panePositions.push(
+							new THREE.Vector3(-width/2 + offset, 0, 0)
+						);
+					}
+					for (var i = 0; i < paneCount[1]; i++)
+					{
+						var offset = (i + 1) * height / (paneCount[1] + 1);
+						paneGeometries.push(
+							new THREE.BoxGeometry( width, paneThickness, paneZThickness )
+						);
+						panePositions.push(
+							new THREE.Vector3(0, -height/2 + offset, 0)
+						);
+					}
+					var paneMaterial = new THREE.MeshStandardMaterial( {color:COLOR_PANE_MATERIAL} );
+					for (var i = 0; i < paneGeometries.length; i++)
+					{
+						var pane = new THREE.Mesh(paneGeometries[i], paneMaterial);
+						pane.position.set(panePositions[i].x, panePositions[i].y, panePositions[i].z);
+						window.add(pane);
+					}
+
+					house.add(window);
+					return window;
 				}
 			}
 		</script>
