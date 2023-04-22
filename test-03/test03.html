@@ -16,6 +16,7 @@
 	<body>
 		<script>
 			var COLOR_HOUSE_WALL = 'rgb(255, 255, 190)';
+			var COLOR_HOUSE_ROOF = 'rgb(200, 80, 30)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
@@ -50,7 +51,7 @@
 			}
 			function initCameraPosition()
 			{
-				camera.position.set( -80, 50, 500 );
+				camera.position.set( -80, 50, 200 );
 				camera.lookAt( new THREE.Vector3(0,0,0) );
 			}
 
@@ -66,38 +67,70 @@
 			}
 			function createHouse()
 			{
+				var wallHeight = 25;
+				var houseLength = 50;
+				var houseWidth = 30;
+
 				var house = new THREE.Group();
-				createWalls(house);
+				createBaseWalls(house);
+				createRoof(house);
 				scene.add(house);
 				return house;
 
-				function createWalls(house)
+				function createBaseWalls(house)
 				{
-					var length = 50;
-					var width = 30;
-					var height = 25;
 					var thickness = 1;
-					var onGroundY = GROUND_LEVEL + height/2;
+					var onGroundY = GROUND_LEVEL + wallHeight/2;
 					var wallGeometries = [
-						new THREE.BoxGeometry( thickness, height, length ),
-						new THREE.BoxGeometry( width, height, thickness ),
-						new THREE.BoxGeometry( thickness, height, length ),
-						new THREE.BoxGeometry( width, height, thickness )
+						new THREE.BoxGeometry( thickness, wallHeight, houseLength ),
+						new THREE.BoxGeometry( houseWidth, wallHeight, thickness ),
+						new THREE.BoxGeometry( thickness, wallHeight, houseLength ),
+						new THREE.BoxGeometry( houseWidth, wallHeight, thickness )
 					];
 					var wallPositions = [
-						new THREE.Vector3(-width/2 + thickness/2, onGroundY, 0),
-						new THREE.Vector3(0, onGroundY, length/2 - thickness/2),
-						new THREE.Vector3(width/2 - thickness/2, onGroundY, 0),
-						new THREE.Vector3(0, onGroundY, -length/2 + thickness/2)
+						new THREE.Vector3(-houseWidth/2 + thickness/2, onGroundY, 0),
+						new THREE.Vector3(0, onGroundY, houseLength/2 - thickness/2),
+						new THREE.Vector3(houseWidth/2 - thickness/2, onGroundY, 0),
+						new THREE.Vector3(0, onGroundY, -houseLength/2 + thickness/2)
 					];
 					var wallMaterial = new THREE.MeshStandardMaterial( {color:COLOR_HOUSE_WALL} );
 					for (var i = 0; i < wallGeometries.length; i++)
 					{
 						var wall = new THREE.Mesh(wallGeometries[i],wallMaterial);
 						wall.position.set(wallPositions[i].x, wallPositions[i].y, wallPositions[i].z);
-						console.log(i, wallPositions[i]);
 						wall.castShadow = true;
 						house.add(wall);
+					}
+				}
+				function createRoof(house)
+				{
+					var angle = Math.PI * 0.17;
+					var length = houseLength + 2;
+					var width = 20;
+					var thickness = 1;
+					var roofY =
+						GROUND_LEVEL + wallHeight + (width * Math.sin(angle)) / 2
+						- (width * Math.cos(angle) - houseWidth / 2) * Math.tan(angle)
+						+ (thickness / Math.cos(angle)) / 2
+					;
+
+					var roofGeometries = [
+						new THREE.BoxGeometry( width, thickness, length ),
+						new THREE.BoxGeometry( width, thickness, length )
+					];
+					var roofPositions = [
+						new THREE.Vector3((-width * Math.cos(angle)) / 2, roofY, 0),
+						new THREE.Vector3((+width * Math.cos(angle)) / 2, roofY, 0)
+					];
+					var roofAngles = [ +angle, -angle];
+					var roofMaterial = new THREE.MeshStandardMaterial( {color:COLOR_HOUSE_ROOF} );
+					for (var i = 0; i < roofGeometries.length; i++)
+					{
+						var roofPart = new THREE.Mesh(roofGeometries[i], roofMaterial);
+						roofPart.position.set(roofPositions[i].x, roofPositions[i].y, roofPositions[i].z);
+						roofPart.rotation.z = roofAngles[i];
+						roofPart.castShadow = true;
+						house.add(roofPart);
 					}
 				}
 			}
