@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>E0809: Първа паралаксна графика</title>
+		<meta charset="utf-8">
+		
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<script src="three.min.js"></script>
+		<script src="OrbitControls.js"></script>
+		<script src="StereoEffect.js"></script>
+		<script src="vax.js"></script>
+	</head>
+	
+	<body>
+		<script>
+			// Init stuff
+			vaxInit(); // TODO: bring back this: vaxInitParallax();
+			initCameraPosition();
+			control = initOrbitalNavigation()
+
+			createGround();
+			
+			var cube = new THREE.Mesh(
+				new THREE.BoxGeometry( 20, 20, 20 ),
+				new THREE.MeshStandardMaterial( {color:'yellow'} )
+			);
+			cube.position.z = 40;
+			cube.rotation.y = 0.2;
+			scene.add( cube );
+
+		
+			function animate( t )
+			{
+				cube.rotation.y = t;
+
+				control.update();
+			}
+
+			function initOrbitalNavigation()
+			{
+				var control = new THREE.OrbitControls( camera, renderer.domElement );
+				control.minDistance = 50;
+				control.maxDistance = 500;
+				control.minPolarAngle = 0.1;
+				control.maxPolarAngle = 1.4; 
+				control.rotateSpeed = 0.3;
+				control.enableDamping = true;
+				control.dampingFactor = 0.1;
+				control.enablePan = true;
+				control.object.zoom = 3;
+				control.object.updateProjectionMatrix();
+				return control;
+			}
+			function initCameraPosition()
+			{
+				camera.position.set( -80, 50, 500 );
+				camera.lookAt( new THREE.Vector3(0,0,0) );
+			}
+
+			function createGround()
+			{
+				var geometry = new THREE.BoxGeometry( 300, 4, 300 ),
+				material = new THREE.MeshPhongMaterial({color:'rgb(0, 255, 0)', shininess:100});
+				var ground = new THREE.Mesh( geometry, material );
+				ground.position.set( 0, -10, 0 );
+				ground.receiveShadow = true;
+				scene.add(ground);
+			}
+			function createHouse()
+			{
+				
+			}
+		</script>
+	</body>
+</html>
+
+
