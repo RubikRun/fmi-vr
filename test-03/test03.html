@@ -37,10 +37,7 @@
 
 			var ground = createGround();
 			var house = createHouse();
-
-			createGravestoneOne(new THREE.Vector3(30, GROUND_LEVEL, 30), 7);
-			createGravestoneTwo(new THREE.Vector3(40, GROUND_LEVEL, 30), 7);
-			createGravestoneThree(new THREE.Vector3(50, GROUND_LEVEL, 30), 7);
+			createGravestones();
 			
 			function animate( t )
 			{
@@ -64,7 +61,7 @@
 			}
 			function initCameraPosition()
 			{
-				camera.position.set( 55, 5, 64 );
+				camera.position.set( 30, 150, 300 );
 				camera.lookAt( new THREE.Vector3(0, 0, 0) );
 			}
 			function initLight()
@@ -81,12 +78,43 @@
 			function createGround()
 			{
 				var geometry = new THREE.BoxGeometry( 300, GROUND_THICKNESS, 300 ),
-				material = new THREE.MeshPhongMaterial({color:'rgb(0, 255, 0)', shininess:10});
+				material = new THREE.MeshPhongMaterial({color:'rgb(60, 210, 30)', shininess:10});
 				var ground = new THREE.Mesh( geometry, material );
 				ground.position.set( 0, GROUND_Y, 0 );
 				ground.receiveShadow = true;
 				scene.add(ground);
 				return ground;
+			}
+			function isGravestonePositionValid(p)
+			{
+				if (p === undefined || p.y != GROUND_LEVEL)
+				{
+					return false;
+				}
+				return !(
+					p.x < 60 && p.x > -60 && p.z > -80
+				);
+			}
+			function createGravestones()
+			{
+				var count = [50, 35, 30];
+				var funcs = [createGravestoneOne, createGravestoneTwo, createGravestoneThree];
+
+				for (var type = 0; type < 3; type++)
+				{
+					for (var i = 0; i < count[type]; i++)
+					{
+						var position = undefined;
+						while (!isGravestonePositionValid(position))
+						{
+							position = new THREE.Vector3(Math.random() * 260 - 130, GROUND_LEVEL, Math.random() * 260 - 130)
+						}
+						funcs[type](
+							position,
+							7
+						);
+					}
+				}
 			}
 			function createGravestoneOne(position, height)
 			{
