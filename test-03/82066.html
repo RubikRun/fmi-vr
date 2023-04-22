@@ -27,20 +27,26 @@
 			var COLOR_GRAVE_CROSS = 'rgb(92, 94, 87)';
 			var COLOR_FENCE_STONE = 'rgb(150, 140, 135)'
 			var COLOR_FENCE_METAL = 'rgb(64, 53, 58)';
+			var COLOR_ROAD = 'rgb(50, 30, 10)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
 
 			// Init stuff
-			vaxInit(); // TODO: bring back this: vaxInitParallax();
+			vaxInitParallax();
 			initCameraPosition();
 			initLight();
 			var control = initOrbitalNavigation()
+
+			renderer.shadowMap.enabled = true;
 
 			var ground = createGround();
 			var house = createHouse();
 			createGravestones();
 			createFence(9);
+			// NOTE: if slow, comment this line
+			createBushes();
+			createRoad();
 			
 			function animate( t )
 			{
@@ -70,12 +76,24 @@
 			}
 			function initLight()
 			{
+				light.shadow.mapSize.width = 1024;
+				light.shadow.mapSize.height = 1024;
+				light.castShadow = true;
 				var light2 = new THREE.PointLight('gray', 1 );
 				light2.position.set( 300, 150, 100 );
+				light2.shadow.mapSize.width = 1024;
+				light2.shadow.mapSize.height = 1024;
+				light2.castShadow = true;
 				var light3 = new THREE.PointLight( 'gray', 1 );
 				light3.position.set( -300, 150, -100 );
+				light3.shadow.mapSize.width = 1024;
+				light3.shadow.mapSize.height = 1024;
+				light3.castShadow = true;
 				var light4 = new THREE.PointLight( 'gray', 1 );
 				light4.position.set( -50, 150, -300 );
+				light4.shadow.mapSize.width = 1024;
+				light4.shadow.mapSize.height = 1024;
+				light4.castShadow = true;
 				scene.add( light2, light3, light4 );
 			}
 
@@ -88,6 +106,74 @@
 				ground.receiveShadow = true;
 				scene.add(ground);
 				return ground;
+			}
+			function getRandShadeOfLightGreen() {
+				var r = Math.random() * 0.3;
+				var g = Math.random() * 0.3 + 0.7;
+				var b = Math.random() * 0.3;
+
+				return new THREE.Color(r, g, b);
+			}
+
+			function getRandShadeOfDarkGreen() {
+				var r = Math.random() * 0.2;
+				var g = Math.random() * 0.3 + 0.3;
+				var b = Math.random() * 0.2;
+
+				return new THREE.Color(r, g, b);
+			}
+			function createRoad()
+			{
+				var roadMaterial = new THREE.MeshStandardMaterial( {color:COLOR_ROAD} );
+
+				var baseGeom = new THREE.BoxGeometry( 70, 1, 200 );
+				var base = new THREE.Mesh(baseGeom, roadMaterial);
+				base.position.set(0, GROUND_LEVEL, 49);
+				base.receiveShadow = true;
+				scene.add(base);
+				return base;
+			}
+			function createBushes()
+			{
+				var bushesCount = 20;
+				for (var i = 0; i < bushesCount; i++)
+				{
+					var position = undefined;
+					while (!isGravestonePositionValid(position))
+					{
+						position = new THREE.Vector3(Math.random() * 260 - 130, GROUND_LEVEL, Math.random() * 260 - 130)
+					}
+					createBush(position);
+				}
+			}
+			function createBush(position) {
+				var material, geometry, object;
+				bushRadius = 5;
+				var leafsCount = 50;
+
+				var bush = new THREE.Group();
+
+				for (var i = 0; i < leafsCount; i++) {
+					material = new THREE.MeshPhongMaterial({color: getRandShadeOfDarkGreen()});
+					// create leaf object
+					geometry = new THREE.BoxGeometry(bushRadius * 0.2, bushRadius * 0.2, 0.4);
+					object = new THREE.Mesh(geometry, material);
+					object.position.set(
+						Math.random() * bushRadius - bushRadius / 2,
+						Math.random() * bushRadius,
+						Math.random() * bushRadius - bushRadius / 2,
+					)
+					object.rotation.set(
+						Math.random() * 2,
+						Math.random() * 2,
+						Math.random() * 2
+					);
+					bush.add(object);
+				}
+
+				bush.position.set(position.x, position.y, position.z);
+				scene.add(bush);
+				return bush;
 			}
 			function createFence(height)
 			{
@@ -132,11 +218,13 @@
 				var cylGeom = new THREE.CylinderGeometry( radius, radius, length );
 				var cyl = new THREE.Mesh(cylGeom, stickMaterial);
 				cyl.position.set(0, length/2, 0);
+				cyl.castShadow = true;
 				stick.add(cyl);
 
 				var spikeGeom = new THREE.CylinderGeometry( 0, radius * 2, length * 0.15 );
 				var spike = new THREE.Mesh(spikeGeom, stickMaterial);
 				spike.position.set(0, length, 0);
+				spike.castShadow = true;
 				stick.add(spike);
 
 				return stick;
@@ -151,6 +239,7 @@
 				var baseGeom = new THREE.BoxGeometry( width, height, width );
 				var base = new THREE.Mesh(baseGeom, pillarMaterial);
 				base.position.set(0, height/2, 0);
+				base.castShadow = true;
 				pillar.add(base);
 
 				var layersCount = 4;
@@ -170,6 +259,7 @@
 				ball.position.set(0, height + hDelta * layersCount + width/2, 0);
 				pillar.add(ball);
 
+				pillar.castShadow = true;
 				return pillar;
 			}
 			function createFenceSingle(position, height, distBtPillars, rotate=false)
@@ -190,6 +280,7 @@
 				var baseGeom = new THREE.BoxGeometry( distBtPillars, baseHeight, baseWidth );
 				var base = new THREE.Mesh(baseGeom, baseMaterial);
 				base.position.set(0, baseHeight / 2, 0);
+				base.castShadow = true;
 				fence.add(base);
 
 				var stickLengths = [
@@ -212,6 +303,7 @@
 				{
 					fence.rotation.y = Math.PI/2;
 				}
+				fence.castShadow = true;
 				scene.add(fence);
 			}
 			function isGravestonePositionValid(p)
@@ -259,12 +351,14 @@
 				var baseGeom = new THREE.BoxGeometry( width, baseHeight, thickness );
 				var base = new THREE.Mesh(baseGeom, graveMaterial);
 				base.position.set(0, baseHeight/2, 0);
+				base.castShadow = true;
 				grave.add(base);
 
 				var cylGeom = new THREE.CylinderGeometry(  radius, radius, thickness );
 				var cyl = new THREE.Mesh(cylGeom, graveMaterial);
 				cyl.position.set(0, baseHeight, 0);
 				cyl.rotation.x = Math.PI/2;
+				cyl.castShadow = true;
 				grave.add(cyl);
 
 				grave.position.set(position.x, position.y, position.z);
@@ -286,6 +380,7 @@
 				var baseGeom = new THREE.BoxGeometry( width, baseHeight, thickness );
 				var base = new THREE.Mesh(baseGeom, graveMaterial);
 				base.position.set(0, baseHeight/2, 0);
+				base.castShadow = true;
 				grave.add(base);
 
 				var cross = new THREE.Group();
@@ -293,11 +388,13 @@
 
 				var vertGeom = new THREE.BoxGeometry(crossWidth, crossHeight, thickness );
 				var vert = new THREE.Mesh(vertGeom, crossMaterial);
+				vert.castShadow = true;
 				cross.add(vert);
 
 				var horGeom = new THREE.BoxGeometry(crossHeight/2, crossWidth, thickness );
 				var hor = new THREE.Mesh(horGeom, crossMaterial);
 				hor.position.set(0, 3 * crossHeight / 16, 0);
+				hor.castShadow = true;
 				cross.add(hor);
 
 				cross.position.set(0, baseHeight + crossHeight/2, 0);
@@ -323,6 +420,7 @@
 				var baseGeom = new THREE.BoxGeometry( width, baseHeight, thickness );
 				var base = new THREE.Mesh(baseGeom, graveMaterial);
 				base.position.set(0, baseHeight/2, 0);
+				base.castShadow = true;
 				grave.add(base);
 
 				var cross = new THREE.Group();
@@ -330,11 +428,13 @@
 
 				var vertGeom = new THREE.BoxGeometry(crossWidth, crossHeight, thickness );
 				var vert = new THREE.Mesh(vertGeom, crossMaterial);
+				vert.castShadow = true;
 				cross.add(vert);
 
 				var horGeom = new THREE.BoxGeometry(crossHeight/2, crossWidth, thickness );
 				var hor = new THREE.Mesh(horGeom, crossMaterial);
 				hor.position.set(0, 3 * crossHeight / 16, 0);
+				hor.castShadow = true;
 				cross.add(hor);
 
 				cross.position.set(0, crossHeight/2 + baseHeight * 0.2, thickness * 0.3);
