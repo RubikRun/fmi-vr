@@ -23,7 +23,8 @@
 			var COLOR_DOOR_FRAME = 'rgb(75, 40, 30)';
 			var COLOR_ROOF_CROSS = 'rgb(140, 81, 35)';
 			var COLOR_GRAVE_ONE = 'rgb(150, 140, 135)';
-			var COLOR_GRAVE_TWO = 'rgb(52, 54, 67)';
+			var COLOR_GRAVE_TWO = 'rgb(92, 94, 87)';
+			var COLOR_GRAVE_CROSS = 'rgb(92, 94, 87)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
@@ -38,6 +39,8 @@
 			var house = createHouse();
 
 			createGravestoneOne(new THREE.Vector3(30, GROUND_LEVEL, 30), 7);
+			createGravestoneTwo(new THREE.Vector3(40, GROUND_LEVEL, 30), 7);
+			createGravestoneThree(new THREE.Vector3(50, GROUND_LEVEL, 30), 7);
 			
 			function animate( t )
 			{
@@ -61,8 +64,8 @@
 			}
 			function initCameraPosition()
 			{
-				camera.position.set(  300, 150, 100 );
-				camera.lookAt( new THREE.Vector3(0,0,0) );
+				camera.position.set( 55, 5, 64 );
+				camera.lookAt( new THREE.Vector3(0, 0, 0) );
 			}
 			function initLight()
 			{
@@ -106,6 +109,80 @@
 				cyl.position.set(0, baseHeight, 0);
 				cyl.rotation.x = Math.PI/2;
 				grave.add(cyl);
+
+				grave.position.set(position.x, position.y, position.z);
+				scene.add(grave);
+				return grave;
+			}
+			function createGravestoneTwo(position, height)
+			{
+				var grave = new THREE.Group();
+
+				var thickness = height * 0.1;
+				var width = height * 0.4;
+				var crossHeight = height * 0.4;
+				var crossWidth = 0.4;
+				var baseHeight = height - crossHeight;
+
+				var graveMaterial = new THREE.MeshStandardMaterial( {color:COLOR_GRAVE_TWO} );
+
+				var baseGeom = new THREE.BoxGeometry( width, baseHeight, thickness );
+				var base = new THREE.Mesh(baseGeom, graveMaterial);
+				base.position.set(0, baseHeight/2, 0);
+				grave.add(base);
+
+				var cross = new THREE.Group();
+				var crossMaterial = new THREE.MeshStandardMaterial( {color:COLOR_GRAVE_CROSS} );
+
+				var vertGeom = new THREE.BoxGeometry(crossWidth, crossHeight, thickness );
+				var vert = new THREE.Mesh(vertGeom, crossMaterial);
+				cross.add(vert);
+
+				var horGeom = new THREE.BoxGeometry(crossHeight/2, crossWidth, thickness );
+				var hor = new THREE.Mesh(horGeom, crossMaterial);
+				hor.position.set(0, 3 * crossHeight / 16, 0);
+				cross.add(hor);
+
+				cross.position.set(0, baseHeight + crossHeight/2, 0);
+
+				grave.add(cross);
+
+				grave.position.set(position.x, position.y, position.z);
+				scene.add(grave);
+				return grave;
+			}
+			function createGravestoneThree(position, height)
+			{
+				var grave = new THREE.Group();
+
+				var thickness = height * 0.1;
+				var width = height * 0.4;
+				var crossHeight = height * 0.4;
+				var crossWidth = 0.4;
+				var baseHeight = height - crossHeight;
+
+				var graveMaterial = new THREE.MeshStandardMaterial( {color:COLOR_GRAVE_ONE} );
+
+				var baseGeom = new THREE.BoxGeometry( width, baseHeight, thickness );
+				var base = new THREE.Mesh(baseGeom, graveMaterial);
+				base.position.set(0, baseHeight/2, 0);
+				grave.add(base);
+
+				var cross = new THREE.Group();
+				var crossMaterial = new THREE.MeshStandardMaterial( {color:COLOR_GRAVE_CROSS} );
+
+				var vertGeom = new THREE.BoxGeometry(crossWidth, crossHeight, thickness );
+				var vert = new THREE.Mesh(vertGeom, crossMaterial);
+				cross.add(vert);
+
+				var horGeom = new THREE.BoxGeometry(crossHeight/2, crossWidth, thickness );
+				var hor = new THREE.Mesh(horGeom, crossMaterial);
+				hor.position.set(0, 3 * crossHeight / 16, 0);
+				cross.add(hor);
+
+				cross.position.set(0, crossHeight/2 + baseHeight * 0.2, thickness * 0.3);
+
+				grave.add(cross);
 
 				grave.position.set(position.x, position.y, position.z);
 				scene.add(grave);
