@@ -25,6 +25,8 @@
 			var COLOR_GRAVE_ONE = 'rgb(150, 140, 135)';
 			var COLOR_GRAVE_TWO = 'rgb(92, 94, 87)';
 			var COLOR_GRAVE_CROSS = 'rgb(92, 94, 87)';
+			var COLOR_FENCE_STONE = 'rgb(150, 140, 135)'
+			var COLOR_FENCE_METAL = 'rgb(64, 53, 58)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
@@ -38,6 +40,7 @@
 			var ground = createGround();
 			var house = createHouse();
 			createGravestones();
+			createFence(9);
 			
 			function animate( t )
 			{
@@ -62,6 +65,7 @@
 			function initCameraPosition()
 			{
 				camera.position.set( 30, 150, 300 );
+				//camera.position.set( 100, 10, 100 );
 				camera.lookAt( new THREE.Vector3(0, 0, 0) );
 			}
 			function initLight()
@@ -84,6 +88,131 @@
 				ground.receiveShadow = true;
 				scene.add(ground);
 				return ground;
+			}
+			function createFence(height)
+			{
+				var fencePiecesPerSide = 10;
+				for (var i = 0; i < fencePiecesPerSide; i++)
+				{
+					if (i >= 4 && i <= 5)
+					{
+						continue;
+					}
+					var pieceWidth = 280 / fencePiecesPerSide;
+					var offs = -140 + pieceWidth/2 + i * pieceWidth;
+					createFenceSingle(new THREE.Vector3(offs, GROUND_LEVEL, 140), height, pieceWidth);
+				}
+				for (var i = 0; i < fencePiecesPerSide; i++)
+				{
+					var pieceWidth = 280 / fencePiecesPerSide;
+					var offs = -140 + pieceWidth/2 + i * pieceWidth;
+					createFenceSingle(new THREE.Vector3(140, GROUND_LEVEL, offs), height, pieceWidth, true);
+				}
+				for (var i = 0; i < fencePiecesPerSide; i++)
+				{
+					var pieceWidth = 280 / fencePiecesPerSide;
+					var offs = -140 + pieceWidth/2 + i * pieceWidth;
+					createFenceSingle(new THREE.Vector3(offs, GROUND_LEVEL, -140), height, pieceWidth);
+				}
+				for (var i = 0; i < fencePiecesPerSide; i++)
+				{
+					var pieceWidth = 280 / fencePiecesPerSide;
+					var offs = -140 + pieceWidth/2 + i * pieceWidth;
+					createFenceSingle(new THREE.Vector3(-140, GROUND_LEVEL, offs), height, pieceWidth, true);
+				}
+			}
+			function createFenceStick(length)
+			{
+				var stick = new THREE.Group();
+
+				var stickMaterial = new THREE.MeshStandardMaterial( {color:COLOR_FENCE_METAL} );
+
+				var radius = length * 0.02;
+
+				var cylGeom = new THREE.CylinderGeometry( radius, radius, length );
+				var cyl = new THREE.Mesh(cylGeom, stickMaterial);
+				cyl.position.set(0, length/2, 0);
+				stick.add(cyl);
+
+				var spikeGeom = new THREE.CylinderGeometry( 0, radius * 2, length * 0.15 );
+				var spike = new THREE.Mesh(spikeGeom, stickMaterial);
+				spike.position.set(0, length, 0);
+				stick.add(spike);
+
+				return stick;
+			}
+			function createFencePillar(height)
+			{
+				var pillar = new THREE.Group();
+
+				var pillarMaterial = new THREE.MeshStandardMaterial( {color:COLOR_FENCE_STONE} );
+				var width = height * 0.4;
+
+				var baseGeom = new THREE.BoxGeometry( width, height, width );
+				var base = new THREE.Mesh(baseGeom, pillarMaterial);
+				base.position.set(0, height/2, 0);
+				pillar.add(base);
+
+				var layersCount = 4;
+				var wDelta = 0.05 * height;
+				var hDelta = 0.07 * height;
+				var lHeight = 0.08 * height;
+				for (var i = 0; i < layersCount; i++)
+				{
+					var layGeom = new THREE.BoxGeometry( width - wDelta * (i+1), lHeight, width - wDelta * (i+1) );
+					var lay = new THREE.Mesh(layGeom, pillarMaterial);
+					lay.position.set(0, height - lHeight/2 + hDelta * (i+1), 0);
+					pillar.add(lay);
+				}
+
+				var ballGeom = new THREE.SphereGeometry( width/2 );
+				var ball = new THREE.Mesh(ballGeom, pillarMaterial);
+				ball.position.set(0, height + hDelta * layersCount + width/2, 0);
+				pillar.add(ball);
+
+				return pillar;
+			}
+			function createFenceSingle(position, height, distBtPillars, rotate=false)
+			{
+				var fence = new THREE.Group()
+
+				var baseWidth = height * 0.25;
+
+				var pillarLeft = createFencePillar(height);
+				pillarLeft.position.set(-distBtPillars/2, 0, 0);
+				fence.add(pillarLeft);
+				var pillarRight = createFencePillar(height);
+				pillarRight.position.set(distBtPillars/2, 0, 0);
+				fence.add(pillarRight);
+
+				var baseHeight = height * 0.4;
+				var baseMaterial = new THREE.MeshStandardMaterial( {color:COLOR_FENCE_STONE} );
+				var baseGeom = new THREE.BoxGeometry( distBtPillars, baseHeight, baseWidth );
+				var base = new THREE.Mesh(baseGeom, baseMaterial);
+				base.position.set(0, baseHeight / 2, 0);
+				fence.add(base);
+
+				var stickLengths = [
+					0.8, 0.8, 0.8, 0.8, 0.8, 0.8,
+					0.85, 0.9, 1, 1.1, 1.1, 1, 0.9, 0.85,
+					0.8, 0.8, 0.8, 0.8, 0.8, 0.8
+				]
+				var firstStOffs = -distBtPillars/2 + height * 0.1;
+				var lastStOffs = distBtPillars/2 - height * 0.1;
+				for (var i = 0; i < stickLengths.length; i++)
+				{
+					var offs = firstStOffs + (i+1) * (lastStOffs - firstStOffs) / stickLengths.length;
+					var stick = createFenceStick(stickLengths[i] * height);
+					stick.position.set(offs, baseHeight, 0);
+					fence.add(stick);
+				}
+				
+				fence.position.set(position.x, position.y, position.z);
+				if (rotate)
+				{
+					fence.rotation.y = Math.PI/2;
+				}
+				scene.add(fence);
 			}
 			function isGravestonePositionValid(p)
 			{
