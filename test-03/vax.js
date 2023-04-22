@@ -58,7 +58,7 @@ function vaxInit()
 	camera.position.set( 0, 0, 100 );
 	camera.lookAt( new THREE.Vector3(0,0,0) );
 	
-	light = new THREE.PointLight();
+	light = new THREE.PointLight('gray', 1);
 	light.position.set( 0, 150, 300 );
 	scene.add( light );
 	

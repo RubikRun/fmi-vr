@@ -29,16 +29,15 @@
 			// Init stuff
 			vaxInit(); // TODO: bring back this: vaxInitParallax();
 			initCameraPosition();
+			initLight();
 			var control = initOrbitalNavigation()
 
 			var ground = createGround();
 			var house = createHouse();
-			house.rotation.y = 0.5;
 			
 			function animate( t )
 			{
 				control.update();
-				house.rotation.y = Math.sin(t);
 			}
 
 			function initOrbitalNavigation()
@@ -58,8 +57,18 @@
 			}
 			function initCameraPosition()
 			{
-				camera.position.set( -40, 50, 200 );
+				camera.position.set(  300, 150, 100 );
 				camera.lookAt( new THREE.Vector3(0,0,0) );
+			}
+			function initLight()
+			{
+				var light2 = new THREE.PointLight('gray', 1 );
+				light2.position.set( 300, 150, 100 );
+				var light3 = new THREE.PointLight( 'gray', 1 );
+				light3.position.set( -300, 150, -100 );
+				var light4 = new THREE.PointLight( 'gray', 1 );
+				light4.position.set( -50, 150, -300 );
+				scene.add( light2, light3, light4 );
 			}
 
 			function createGround()
