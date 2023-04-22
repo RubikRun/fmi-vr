@@ -74,7 +74,7 @@
 			function createGround()
 			{
 				var geometry = new THREE.BoxGeometry( 300, GROUND_THICKNESS, 300 ),
-				material = new THREE.MeshPhongMaterial({color:'rgb(0, 255, 0)', shininess:100});
+				material = new THREE.MeshPhongMaterial({color:'rgb(0, 255, 0)', shininess:10});
 				var ground = new THREE.Mesh( geometry, material );
 				ground.position.set( 0, GROUND_Y, 0 );
 				ground.receiveShadow = true;
