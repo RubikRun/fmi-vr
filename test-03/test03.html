@@ -19,6 +19,8 @@
 			var COLOR_HOUSE_ROOF = 'rgb(200, 80, 30)';
 			var COLOR_WINDOW_GLASS = 'rgb(202, 234, 245)';
 			var COLOR_PANE_MATERIAL = 'rgb(162, 91, 45)';
+			var COLOR_DOOR_BASE = 'rgb(140, 81, 35)';
+			var COLOR_DOOR_FRAME = 'rgb(75, 40, 30)';
 			var GROUND_Y = -10;
 			var GROUND_THICKNESS = 4;
 			var GROUND_LEVEL = GROUND_Y + GROUND_THICKNESS / 2;
@@ -78,6 +80,7 @@
 				createBaseWalls(house);
 				createRoof(house);
 				createWindows(house);
+				createDoor(house);
 				scene.add(house);
 				return house;
 
@@ -136,6 +139,51 @@
 						roofPart.castShadow = true;
 						house.add(roofPart);
 					}
+				}
+				function createDoor(house)
+				{
+					var door = new THREE.Group();
+
+					var width = 13;
+					var baseHeight = 8;
+					var doorHeight = baseHeight + width/2;
+					var frameThickness = 0.7;
+
+					var baseDoorGeometry = new THREE.BoxGeometry( width, baseHeight, 0.2 );
+					var doorMaterial = new THREE.MeshStandardMaterial( {color:COLOR_DOOR_BASE} );
+					var baseDoor = new THREE.Mesh(baseDoorGeometry, doorMaterial);
+					door.add(baseDoor);
+
+					var cylDoorGeometry = new THREE.CylinderGeometry( width/2, width/2, 0.2 );
+					var cylDoor = new THREE.Mesh(cylDoorGeometry, doorMaterial);
+					cylDoor.position.set(0, baseHeight/2, 0);
+					cylDoor.rotation.x = Math.PI/2;
+					door.add(cylDoor);
+
+					var frameMaterial = new THREE.MeshStandardMaterial( {color:COLOR_DOOR_FRAME} );
+
+					var cylFrameGeometry = new THREE.TorusGeometry( width/2, frameThickness/2, 10, 40, Math.PI );
+					var cylFrame = new THREE.Mesh(cylFrameGeometry, frameMaterial);
+					cylFrame.position.set(0, baseHeight/2, 0);
+					door.add(cylFrame);
+
+					var leftFrameGeometry = new THREE.CylinderGeometry( frameThickness/2, frameThickness/2, baseHeight );
+					var leftFrame = new THREE.Mesh(leftFrameGeometry, frameMaterial);
+					leftFrame.position.set(-width/2, 0, 0);
+					door.add(leftFrame);
+
+					var rightFrameGeometry = new THREE.CylinderGeometry( frameThickness/2, frameThickness/2, baseHeight );
+					var rightFrame = new THREE.Mesh(rightFrameGeometry, frameMaterial);
+					rightFrame.position.set(width/2, 0, 0);
+					door.add(rightFrame);
+
+					var splitGeometry = new THREE.BoxGeometry(0.25, doorHeight, 0.25);
+					var split = new THREE.Mesh(splitGeometry, new THREE.MeshStandardMaterial( {color:'black'} ));
+					split.position.set(0, doorHeight/2 - baseHeight/2, 0);
+					door.add(split);
+
+					door.position.set(0, GROUND_LEVEL + baseHeight/2, houseLength/2);
+					house.add(door);
 				}
 				function createWindows(house)
 				{
