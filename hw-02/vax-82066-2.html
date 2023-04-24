@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Boris Dimitrov, 82066, Homework 2</title>
+		<meta charset="utf-8">
+		
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<script src="three.min.js"></script>
+        <script src="OrbitControls.js"></script>
+		<script src="physi.js"></script>
+		<script src="vax.js"></script>
+	</head>
+	
+	<body>
+		<script>
+            var COLOR_BOARD = 'rgb(110, 61, 25)';
+
+			vaxInit();
+            initLightsAndShadows();
+            initCamera();
+            var control = initOrbitalNavigation();
+            initBoard();
+			createDice();
+
+			function animate( t )
+			{
+				scene.simulate( 1/10 );
+                control.update();
+			}
+
+            function initLightsAndShadows()
+            {
+                light.position.set( 150, 300, 150 );
+                renderer.shadowMap.enabled = true;
+                light.shadow.mapSize = new THREE.Vector2( 1024*2, 1024*2 );
+                light.castShadow = true;
+
+                var light2 = new THREE.PointLight('white', 0.5 );
+				light2.position.set( -150, 200, -150 );
+				light.shadow.mapSize = new THREE.Vector2( 1024*2, 1024*2 );
+				light2.castShadow = false;
+
+				scene.add( light2 );
+            }
+
+            function initCamera()
+            {
+                camera.position.set( 0, 180, 260 );
+			    camera.lookAt( new THREE.Vector3(0,0,0) );
+            }
+
+            function initOrbitalNavigation()
+			{
+				var control = new THREE.OrbitControls( camera, renderer.domElement );
+				control.minDistance = 50;
+				control.maxDistance = 800;
+				control.minPolarAngle = 0;
+				control.maxPolarAngle = 1.7; 
+				control.rotateSpeed = 0.3;
+				control.enableDamping = true;
+				control.dampingFactor = 0.1;
+				control.enablePan = true;
+				control.object.updateProjectionMatrix();
+				return control;
+			}
+
+            function initBoard()
+            {
+                var WALL_THICKNESS = 4;
+                var WALL_HEIGHT = 16;
+                var BASE_THICKNESS = 4;
+                var BASE_WIDTH = 300;
+
+                var material = Physijs.createMaterial( new THREE.MeshPhongMaterial({color:COLOR_BOARD}) );
+
+                var baseGeom = new THREE.BoxGeometry( BASE_WIDTH, BASE_THICKNESS, BASE_WIDTH );
+                var board = new Physijs.BoxMesh( baseGeom, material, 0 );
+                board.position.set( 0, -10, 0 );
+                board.receiveShadow = true;
+
+                var wallGeom = new THREE.BoxGeometry( BASE_WIDTH, WALL_HEIGHT, WALL_THICKNESS );
+                var wall = new Physijs.BoxMesh( wallGeom, material, 0 );
+                wall.position.set( 0, WALL_HEIGHT/2 + BASE_THICKNESS/2, BASE_WIDTH/2 - WALL_THICKNESS/2 );
+                wall.receiveShadow = true;
+                board.add( wall );
+
+                var wallGeom = new THREE.BoxGeometry( BASE_WIDTH, WALL_HEIGHT, WALL_THICKNESS );
+                var wall = new Physijs.BoxMesh( wallGeom, material, 0 );
+                wall.position.set( 0, WALL_HEIGHT/2 + BASE_THICKNESS/2, -BASE_WIDTH/2 + WALL_THICKNESS/2 );
+                wall.receiveShadow = true;
+                board.add( wall );
+
+                var wallGeom = new THREE.BoxGeometry( WALL_THICKNESS, WALL_HEIGHT, BASE_WIDTH );
+                var wall = new Physijs.BoxMesh( wallGeom, material, 0 );
+                wall.position.set( BASE_WIDTH/2 - WALL_THICKNESS/2, WALL_HEIGHT/2 + BASE_THICKNESS/2, 0 );
+                wall.receiveShadow = true;
+                board.add( wall );
+
+                var wallGeom = new THREE.BoxGeometry( WALL_THICKNESS, WALL_HEIGHT, BASE_WIDTH );
+                var wall = new Physijs.BoxMesh( wallGeom, material, 0 );
+                wall.position.set( -BASE_WIDTH/2 + WALL_THICKNESS/2, WALL_HEIGHT/2 + BASE_THICKNESS/2, 0 );
+                wall.receiveShadow = true;
+                board.add( wall );
+
+                scene.add(board);
+            }
+
+            function createDice()
+            {
+                var DIE_SIZE = 20;
+                var dieGeom = new THREE.BoxGeometry( DIE_SIZE, DIE_SIZE, DIE_SIZE ),
+				material = Physijs.createMaterial( new THREE.MeshPhongMaterial({color:'white'}) );
+				
+                var genDir = new THREE.Vector3(
+                    THREE.MathUtils.randFloat( -25, 25 ),
+                    0,
+                    THREE.MathUtils.randFloat( -25, 25 )
+                );
+
+                var dice = [];
+                for(var i = 0; i < 2; i++)
+                {
+                    var die = new Physijs.BoxMesh( dieGeom, material );
+                    die.position.set( THREE.MathUtils.randFloat(-10,10), 100+20*i, THREE.MathUtils.randFloat(-10,10) );
+
+                    die.receiveShadow = true;
+                    die.castShadow = true;
+
+                    putDotsOnDie(die, DIE_SIZE);
+
+                    scene.add(die);
+
+                    var v = new THREE.Vector3(
+                        THREE.MathUtils.randFloat( 0.85, 1.15 ) * genDir.x,
+                        0,
+                        THREE.MathUtils.randFloat( 0.85, 1.15 ) * genDir.z
+                    );
+					die.setLinearVelocity( v );
+					
+					var v = new THREE.Vector3(
+						THREE.MathUtils.randFloat(-2, 2),
+						THREE.MathUtils.randFloat(-2, 2),
+						THREE.MathUtils.randFloat(-2, 2)
+                    );
+                    die.setAngularVelocity(v);
+
+                    dice.push(die);
+                }
+
+                return dice;
+            }
+
+            function putDotsOnDie(die, dieSize)
+            {
+                var DOT_RADIUS = dieSize * 0.1;
+                var DOT_THICKNESS = dieSize * 0.001;
+
+                material = Physijs.createMaterial( new THREE.MeshPhongMaterial({color:'black'}) );
+
+                var dotGeom = new THREE.CylinderGeometry( DOT_RADIUS, DOT_RADIUS, DOT_THICKNESS );
+
+				var oneDot = new THREE.Mesh(dotGeom, material);
+				oneDot.position.set(0, dieSize/2, 0);
+				die.add(oneDot);
+
+                var twoPos = [
+                    new THREE.Vector3(dieSize/2, -dieSize/4, +dieSize/4),
+                    new THREE.Vector3(dieSize/2, +dieSize/4, -dieSize/4)
+                ];
+                for (var i = 0; i < 2; i++)
+                {
+                    var twoDot = new THREE.Mesh(dotGeom, material);
+                    twoDot.position.set(twoPos[i].x, twoPos[i].y, twoPos[i].z);
+                    twoDot.rotation.z = Math.PI / 2;
+                    die.add(twoDot);
+                }
+
+                var threePos = [
+                    new THREE.Vector3(-dieSize/4, -dieSize/4, -dieSize/2),
+                    new THREE.Vector3(0, 0, -dieSize/2),
+                    new THREE.Vector3(+dieSize/4, +dieSize/4, -dieSize/2)
+                ];
+                for (var i = 0; i < 3; i++)
+                {
+                    var threeDot = new THREE.Mesh(dotGeom, material);
+                    threeDot.position.set(threePos[i].x, threePos[i].y, threePos[i].z);
+                    threeDot.rotation.x = Math.PI / 2;
+                    die.add(threeDot);
+                }
+
+                var fourPos = [
+                    new THREE.Vector3(-dieSize/4, -dieSize/4, dieSize/2),
+                    new THREE.Vector3(-dieSize/4, +dieSize/4, dieSize/2),
+                    new THREE.Vector3(+dieSize/4, -dieSize/4, dieSize/2),
+                    new THREE.Vector3(+dieSize/4, +dieSize/4, dieSize/2)
+                ];
+                for (var i = 0; i < 4; i++)
+                {
+                    var fourDot = new THREE.Mesh(dotGeom, material);
+                    fourDot.position.set(fourPos[i].x, fourPos[i].y, fourPos[i].z);
+                    fourDot.rotation.x = Math.PI / 2;
+                    die.add(fourDot);
+                }
+
+                var fivePos = [
+                    new THREE.Vector3(-dieSize/2, -dieSize/4, -dieSize/4),
+                    new THREE.Vector3(-dieSize/2, -dieSize/4, +dieSize/4),
+                    new THREE.Vector3(-dieSize/2, 0, 0),
+                    new THREE.Vector3(-dieSize/2, +dieSize/4, -dieSize/4),
+                    new THREE.Vector3(-dieSize/2, +dieSize/4, +dieSize/4)
+                ];
+                for (var i = 0; i < 5; i++)
+                {
+                    var fiveDot = new THREE.Mesh(dotGeom, material);
+                    fiveDot.position.set(fivePos[i].x, fivePos[i].y, fivePos[i].z);
+                    fiveDot.rotation.z = Math.PI / 2;
+                    die.add(fiveDot);
+                }
+
+                var sixPos = [
+                    new THREE.Vector3(-dieSize/4, -dieSize/2, -dieSize/4),
+                    new THREE.Vector3(-dieSize/4, -dieSize/2, 0),
+                    new THREE.Vector3(-dieSize/4, -dieSize/2, +dieSize/4),
+                    new THREE.Vector3(+dieSize/4, -dieSize/2, -dieSize/4),
+                    new THREE.Vector3(+dieSize/4, -dieSize/2, 0),
+                    new THREE.Vector3(+dieSize/4, -dieSize/2, +dieSize/4)
+                ];
+                for (var i = 0; i < 6; i++)
+                {
+                    var sixDot = new THREE.Mesh(dotGeom, material);
+                    sixDot.position.set(sixPos[i].x, sixPos[i].y, sixPos[i].z);
+                    die.add(sixDot);
+                }
+            }
+		</script>
+	</body>
+</html>
