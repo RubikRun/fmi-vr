@@ -16,7 +16,8 @@
 		<script>
 			vaxInit();
 			
-			camera.fov = 30;
+			camera.fov = 40;
+			camera.position.set(0, 0, 0);
 			onWindowResize();
 				
 			scene.background = new THREE.CubeTextureLoader().load( [
@@ -25,15 +26,26 @@
 				'cube/posz.jpg', 'cube/negz.jpg' ] );
 				
 
-			var geometry = new THREE.BoxGeometry( 20, 15, 10 ),
+			var geometry = new THREE.BoxGeometry( 10, 10, 10 ),
 				material = new THREE.MeshBasicMaterial( {
 								envMap: scene.background,
 								reflectivity: 1
-							}),
-			box = new THREE.Mesh( geometry, material );
-			box.position.set(0, 0, -100);
-				
-			scene.add( box );
+							});
+			var boxes = [];
+			var boxesCount = 200;
+			for (var i = 0; i < boxesCount; i++) {
+				box = new THREE.Mesh( geometry, material );
+				var r = THREE.MathUtils.randFloat(200,220),
+					a = THREE.MathUtils.randFloat(0,2*Math.PI),
+					b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
+					box.position.setFromSphericalCoords( r, b, a );
+				box.rotation.set(
+					THREE.MathUtils.randFloat(0, Math.PI),
+					THREE.MathUtils.randFloat(0, Math.PI),
+					THREE.MathUtils.randFloat(0, Math.PI)
+				);
+				scene.add( box );
+			}
 			
 			function animate()
 			{
