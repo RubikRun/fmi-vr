@@ -20,35 +20,39 @@
 			camera.position.set(0, 0, 0);
 			onWindowResize();
 				
-			scene.background = new THREE.CubeTextureLoader().load( [
+			var cubeTex = new THREE.CubeTextureLoader().load( [
 				'cube/posx.jpg', 'cube/negx.jpg',
 				'cube/posy.jpg', 'cube/negy.jpg',
 				'cube/posz.jpg', 'cube/negz.jpg' ] );
-				
+			scene.background = cubeTex;
 
-			var geometry = new THREE.BoxGeometry( 10, 10, 10 ),
-				material = new THREE.MeshBasicMaterial( {
-								envMap: scene.background,
-								reflectivity: 1
-							});
-			var boxes = [];
-			var boxesCount = 200;
-			for (var i = 0; i < boxesCount; i++) {
-				box = new THREE.Mesh( geometry, material );
-				var r = THREE.MathUtils.randFloat(200,220),
-					a = THREE.MathUtils.randFloat(0,2*Math.PI),
-					b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
-					box.position.setFromSphericalCoords( r, b, a );
-				box.rotation.set(
-					THREE.MathUtils.randFloat(0, Math.PI),
-					THREE.MathUtils.randFloat(0, Math.PI),
-					THREE.MathUtils.randFloat(0, Math.PI)
-				);
-				scene.add( box );
-			}
+			crystalMaterial = new THREE.MeshPhysicalMaterial({
+				transmission: 1.0,
+				roughness: 0.0,
+				ior: 1.7,
+				thickness: 7,
+				specularIntensity: 0,
+				envMap: cubeTex
+			});
+
+			var icosahedronsCount = 60;
+			var icosahedrons = createIcosahedrons(icosahedronsCount, 10, crystalMaterial);
+			var cubesCount = 60;
+			var cubes = createCubes(cubesCount, 15, crystalMaterial);
+			var conesCount = 60;
+			var cones = createCones(conesCount, 10, crystalMaterial);
 			
-			function animate()
+			function animate(t)
 			{
+				for (var i = 0; i < icosahedronsCount; i++) {
+					icosahedrons[i].rotation.set(t/4, t/3, t/2, 'XYZ');
+				}
+				for (var i = 0; i < cubesCount; i++) {
+					cubes[i].rotation.set(t/4, t/3, t/2, 'XYZ');
+				}
+				for (var i = 0; i < conesCount; i++) {
+					cones[i].rotation.set(t/4, t/3, t/2, 'XYZ');
+				}
 			}
 
 			var gammaPrev = null;
@@ -81,6 +85,68 @@
 				beta = THREE.MathUtils.degToRad( beta );
 				gamma = THREE.MathUtils.degToRad( gamma );
 				camera.rotation.set(beta, gamma, 0, 'YXZ');
+			}
+
+			function createIcosahedrons(count, radius, material) {
+				var geometry = new THREE.IcosahedronGeometry( radius, 0 );
+				var objs = [];
+				for (var i = 0; i < count; i++) {
+					obj = new THREE.Mesh( geometry, material );
+					var r = THREE.MathUtils.randFloat(200,220),
+						a = THREE.MathUtils.randFloat(0,2*Math.PI),
+						b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
+						obj.position.setFromSphericalCoords( r, b, a );
+						obj.rotation.set(
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI)
+					);
+					scene.add( obj );
+					objs.push(obj);
+				}
+				return objs;
+			}
+			function createCubes(count, size, material) {
+				var geometry = new THREE.BoxGeometry( size, size, size );
+				var objs = [];
+				for (var i = 0; i < count; i++) {
+					obj = new THREE.Mesh( geometry, material );
+					var r = THREE.MathUtils.randFloat(200,220),
+						a = THREE.MathUtils.randFloat(0,2*Math.PI),
+						b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
+						obj.position.setFromSphericalCoords( r, b, a );
+						obj.rotation.set(
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI)
+					);
+					scene.add( obj );
+					objs.push(obj);
+				}
+				return objs;
+			}
+			function createCones(count, radius, material) {
+				var objs = [];
+				for (var i = 0; i < count; i++) {
+					var geometry = new THREE.ConeGeometry(
+						radius,
+						THREE.MathUtils.randFloat(0.6, 1.4) * radius,
+						3 + Math.floor(THREE.MathUtils.randFloat(0, 4))
+					);
+					obj = new THREE.Mesh( geometry, material );
+					var r = THREE.MathUtils.randFloat(200,220),
+						a = THREE.MathUtils.randFloat(0,2*Math.PI),
+						b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
+						obj.position.setFromSphericalCoords( r, b, a );
+						obj.rotation.set(
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI)
+					);
+					scene.add( obj );
+					objs.push(obj);
+				}
+				return objs;
 			}
 			
 		</script>
