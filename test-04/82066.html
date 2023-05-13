@@ -58,6 +58,9 @@
 			var gammaPrev = null;
 			var gammaTurns = 0;
 
+			var betaZero = null;
+			var gammaZero = null;
+
 			window.addEventListener( "deviceorientation", deviceOrientation, true);
 			function deviceOrientation( event )
 			{
@@ -81,6 +84,15 @@
 				}
 				gammaPrev = gamma;
 				gamma += gammaTurns * 180;
+
+				if (betaZero === null) {
+					betaZero = beta;
+				}
+				if (gammaZero === null) {
+					gammaZero = gamma;
+				}
+				beta -= betaZero;
+				gamma -= gammaZero;
 
 				beta = THREE.MathUtils.degToRad( beta );
 				gamma = THREE.MathUtils.degToRad( gamma );
