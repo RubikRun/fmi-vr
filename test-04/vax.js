@@ -62,8 +62,8 @@ function vaxInit( rendererOptions = {antialias:true} )
 	else
 		camera = new THREE.OrthographicCamera( -window.innerWidth/2, window.innerWidth/2, window.innerHeight/2, -window.innerHeight/2, 1, 1000 );
 
-	camera.position.set( 0, 0, 100 );
-	camera.lookAt( new THREE.Vector3(0,0,0) );
+	camera.position.set( 0, 0, 0 );
+	camera.rotation.set( new THREE.Vector3(0, 0, 0) );
 	
 	light = new THREE.PointLight();
 	light.position.set( 0, 150, 300 );
