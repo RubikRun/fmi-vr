@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿<!--
+	Работи само в портретен режим.
+	Работи от всякакво начално положение (на теория), но най-добре от хоризонтално върху маса.
+	Поддържа безкрайно въртене наляво и надясно,
+	а нагоре и надолу само до +-90 градуса.
+-->
+<!DOCTYPE html>
 
 <html>
 	<head>
@@ -16,7 +22,7 @@
 		<script>
 			vaxInit();
 			
-			camera.fov = 40;
+			camera.fov = 60;
 			camera.position.set(0, 0, 0);
 			onWindowResize();
 				
@@ -31,7 +37,7 @@
 				roughness: 0.0,
 				ior: 1.7,
 				thickness: 7,
-				specularIntensity: 0,
+				specularIntensity: 0.3,
 				envMap: cubeTex
 			});
 
@@ -96,7 +102,7 @@
 
 				beta = THREE.MathUtils.degToRad( beta );
 				gamma = THREE.MathUtils.degToRad( gamma );
-				camera.rotation.set(beta, gamma, 0, 'YXZ');
+				camera.rotation.set(beta, gamma+Math.PI, 0, 'YXZ');
 			}
 
 			function createIcosahedrons(count, radius, material) {
