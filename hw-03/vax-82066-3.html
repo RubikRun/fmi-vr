@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Homework 3 of Boris Dimitrov 82066</title>
+		<meta charset="utf-8">
+		
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<script src="three.min.js"></script>
+		<script src="StereoEffect.js"></script>
+		<script src="vax.js"></script>
+	</head>
+	
+	<body>
+		<script>
+			vaxInitParallax();
+
+			window.addEventListener( "deviceorientation", deviceOrientation, true);
+			function deviceOrientation( event )
+			{
+				var alpha = THREE.MathUtils.degToRad( event.alpha ),
+					beta = THREE.MathUtils.degToRad( event.beta ),
+					gamma = THREE.MathUtils.degToRad( event.gamma );
+					
+				camera.rotation.set( -gamma, beta, alpha, 'ZYX' );
+			}
+
+			var ROOM_RADIUS = 400;
+
+			setupCamera();
+			setupLights(ROOM_RADIUS);
+			
+			var room = createRoom(ROOM_RADIUS);
+			var cones = createCones(100, 0.02, 0.2, ROOM_RADIUS);
+			
+			function animate(t)
+			{
+			}
+
+			function setupCamera() {
+				camera = new THREE.PerspectiveCamera( 60, 1, 1, 1000 );
+				camera.position.set( 0, 0, 0 );
+				camera.lookAt( new THREE.Vector3( 0, 0, -1 ) );
+			}
+			function setupLights(roomRadius)
+			{
+				var wallOffs = roomRadius * 0.7
+				var intensity = 0.6
+
+				scene.remove(light);
+				var light1 = new THREE.PointLight('yellow', intensity );
+				light1.position.set( wallOffs, wallOffs, wallOffs );
+				var light2 = new THREE.PointLight('yellow', intensity );
+				light2.position.set( wallOffs, -wallOffs, wallOffs );
+				var light3 = new THREE.PointLight( 'white', intensity );
+				light3.position.set( -wallOffs, wallOffs, wallOffs );
+				var light4 = new THREE.PointLight( 'gray', intensity );
+				light4.position.set( -wallOffs, -wallOffs, wallOffs );
+				scene.add( light1, light2, light3, light4 );
+			}
+
+			function createRoom(radius) {
+				var material = new THREE.MeshPhongMaterial({
+					color:'green',
+					side: THREE.DoubleSide
+				});
+				var geom = new THREE.BoxGeometry( radius * 2, radius * 2, radius * 2 );
+				var obj = new THREE.Mesh(geom, material);
+				obj.position.set(0, 0, 0);
+				scene.add(obj);
+				return geom;
+			}
+
+			function createCones(count, radius, height, roomRadius) {
+				var objs = [];
+
+				var walls = [
+					new THREE.Vector3(1, 0, 0),
+					new THREE.Vector3(-1, 0, 0),
+					new THREE.Vector3(0, 1, 0),
+					new THREE.Vector3(0, -1, 0),
+					new THREE.Vector3(0, 0, 1),
+					new THREE.Vector3(0, 0, -1)
+				];
+
+				for (var i = 0; i < 6; i++) {
+					wallCones = createConesOnWall(count, radius, height, roomRadius, walls[i]);
+					for (var j = 0; j < wallCones.length; j++) {
+						objs.push(wallCones[j]);
+					}
+				}
+
+				return objs;
+			}
+
+			function createConesOnWall(count, radius, height, roomRadius, wall) {
+				radius *= roomRadius;
+				height *= roomRadius;
+				var objs = [];
+				for (var i = 0; i < count; i++) {
+					var geometry = new THREE.ConeGeometry(
+						radius,
+						height,
+						10
+					);
+					var material = new THREE.MeshPhongMaterial({
+						color: getRandColor()
+					});
+					obj = new THREE.Mesh( geometry, material );
+					obj.position.set(0, 0, 0);
+					if (wall.x == 0) {
+						obj.position.x = THREE.MathUtils.randFloat(-roomRadius, roomRadius);
+					}
+					else {
+						obj.position.x = wall.x * roomRadius;
+					}
+					if (wall.y == 0) {
+						obj.position.y = THREE.MathUtils.randFloat(-roomRadius, roomRadius);
+					}
+					else {
+						obj.position.y = wall.y * roomRadius;
+					}
+					if (wall.z == 0) {
+						obj.position.z = THREE.MathUtils.randFloat(-roomRadius, roomRadius);
+					}
+					else {
+						obj.position.z = wall.z * roomRadius;
+					}
+					obj.rotation.set(
+						Math.PI/2,
+						0,
+						0
+					);
+					scene.add( obj );
+					objs.push(obj);
+				}
+				return objs;
+			}
+
+			function getRandColor() {
+				var r = Math.random();
+				var g = Math.random();
+				var b = Math.random();
+
+				return new THREE.Color(r, g, b);
+			}
+			
+		</script>
+		
+	</body>
+</html>
+
+
