@@ -1,0 +1,162 @@
+﻿<!--
+	Работи само в портретен режим.
+	Работи от всякакво начално положение (на теория), но най-добре от хоризонтално върху маса.
+	Поддържа безкрайно въртене наляво и надясно,
+	а нагоре и надолу само до +-90 градуса.
+-->
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Test 4 of Boris Dimitrov 82066</title>
+		<meta charset="utf-8">
+		
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<script src="three.min.js"></script>
+		<script src="vax.js"></script>
+	</head>
+	
+	<body>
+		<script>
+			vaxInit();
+
+			window.addEventListener( "deviceorientation", deviceOrientation, true);
+			function deviceOrientation( event )
+			{
+				var alpha = THREE.MathUtils.degToRad( event.alpha ),
+					beta = THREE.MathUtils.degToRad( event.beta ),
+					gamma = THREE.MathUtils.degToRad( event.gamma );
+				console.log(event.alpha.toFixed(0), event.beta.toFixed(0), event.gamma.toFixed(0))
+					
+				camera.rotation.set( -gamma, beta, alpha, 'ZYX' );
+
+				target = new THREE.Vector3(0, 0, 0);
+				camera.getWorldDirection(target);
+
+				smartphone.position.set(target.x * 30, target.y * 30, target.z * 30);
+				//smartphone.rotation.set( -gamma * 1, beta * 1, alpha * 1, 'ZYX' );
+			}
+
+			scene.background = new THREE.Color( 'white' );
+
+			camera.position.set( 0, 0, 0 );
+			camera.lookAt( new THREE.Vector3( 0, 0, -1 ) );
+			
+			var material = new THREE.MeshPhongMaterial( {color: 'gray', shininess: 50} );
+
+			var icosahedronsCount = 60;
+			var icosahedrons = createIcosahedrons(icosahedronsCount, 10, material);
+			var cubesCount = 60;
+			var cubes = createCubes(cubesCount, 15, material);
+			var conesCount = 60;
+			var cones = createCones(conesCount, 10, material);
+
+			var smartphone = createSmartphone();
+			
+			function animate(t)
+			{
+				for (var i = 0; i < icosahedronsCount; i++) {
+					icosahedrons[i].rotation.set(t/4, t/3, t/2, 'XYZ');
+				}
+				for (var i = 0; i < cubesCount; i++) {
+					cubes[i].rotation.set(t/4, t/3, t/2, 'XYZ');
+				}
+				for (var i = 0; i < conesCount; i++) {
+					cones[i].rotation.set(t/4, t/3, t/2, 'XYZ');
+				}
+			}
+
+			function createIcosahedrons(count, radius, material) {
+				var geometry = new THREE.IcosahedronGeometry( radius, 0 );
+				var objs = [];
+				for (var i = 0; i < count; i++) {
+					obj = new THREE.Mesh( geometry, material );
+					var r = THREE.MathUtils.randFloat(200,220),
+						a = THREE.MathUtils.randFloat(0,2*Math.PI),
+						b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
+						obj.position.setFromSphericalCoords( r, b, a );
+						obj.rotation.set(
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI)
+					);
+					scene.add( obj );
+					objs.push(obj);
+				}
+				return objs;
+			}
+			function createCubes(count, size, material) {
+				var geometry = new THREE.BoxGeometry( size, size, size );
+				var objs = [];
+				for (var i = 0; i < count; i++) {
+					obj = new THREE.Mesh( geometry, material );
+					var r = THREE.MathUtils.randFloat(200,220),
+						a = THREE.MathUtils.randFloat(0,2*Math.PI),
+						b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
+						obj.position.setFromSphericalCoords( r, b, a );
+						obj.rotation.set(
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI)
+					);
+					scene.add( obj );
+					objs.push(obj);
+				}
+				return objs;
+			}
+			function createCones(count, radius, material) {
+				var objs = [];
+				for (var i = 0; i < count; i++) {
+					var geometry = new THREE.ConeGeometry(
+						radius,
+						THREE.MathUtils.randFloat(0.6, 1.4) * radius,
+						3 + Math.floor(THREE.MathUtils.randFloat(0, 4))
+					);
+					obj = new THREE.Mesh( geometry, material );
+					var r = THREE.MathUtils.randFloat(200,220),
+						a = THREE.MathUtils.randFloat(0,2*Math.PI),
+						b = THREE.MathUtils.randFloat(Math.PI/4,Math.PI/1.8);
+						obj.position.setFromSphericalCoords( r, b, a );
+						obj.rotation.set(
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI),
+						THREE.MathUtils.randFloat(0, Math.PI)
+					);
+					scene.add( obj );
+					objs.push(obj);
+				}
+				return objs;
+			}
+
+			function createSmartphone() {
+				var smartphone = new THREE.Group();
+
+				var geometry = new THREE.BoxGeometry( 7, 0.8, 15 ),
+					material = new THREE.MeshPhongMaterial( {color: 'black', shininess: 50} ),
+					board = new THREE.Mesh( geometry, material );
+
+				var geometry = new THREE.BoxGeometry( 6.5, 0.8, 14.5 ),
+					material = new THREE.MeshPhongMaterial( {color: 'aliceblue', shininess: 50} ),
+					screen = new THREE.Mesh( geometry, material );
+					screen.position.y = 0.05;
+
+				var geometry = new THREE.BoxGeometry( 0.8, 0.2, 0.1 ),
+					material = new THREE.MeshPhongMaterial( {color: 'gray', shininess: 50} ),
+					usb = new THREE.Mesh( geometry, material );
+					usb.position.z = 7.5;
+
+				smartphone.position.set( 0, 0, -30);
+
+				smartphone.add( board, screen, usb );
+				scene.add ( smartphone );
+
+				return smartphone
+			}
+			
+		</script>
+		
+	</body>
+</html>
+
+
